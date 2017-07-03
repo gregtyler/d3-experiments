@@ -26,7 +26,11 @@
           const y = d3
             .scaleLinear()
             .domain([0, Math.max.apply(window, data.map(d => d.rain))])
-            .range([0, chartHeight]);
+            .rangeRound([0, chartHeight]);
+          const tempY = d3
+            .scaleLinear()
+            .domain([Math.min.apply(window, data.map(d => Math.floor(d.tmin))), Math.max.apply(window, data.map(d => Math.ceil(d.tmax)))])
+            .rangeRound([0, chartHeight]);
 
           // Create a chart
           const chart = d3.select('#root')
@@ -72,11 +76,6 @@
               .text(datum => monthNames[datum.mm - 1])
               .attr("transform", "translate(0, 18)");
 
-          const tempY = d3
-            .scaleLinear()
-            .domain([0, Math.max.apply(window, data.map(d => d.tmax))])
-            .range([0, chartHeight]);
-
           // A function to draw a temperature line on the graph
           function tempLineFunc(item) {
             return d3.line()
@@ -90,7 +89,8 @@
             .attr('d', tempLineFunc('tmin'))
             .style('fill', 'none')
             .style('stroke', 'black')
-            .style('stroke-width', '4');
+            .style('stroke-width', '4')
+            .style('opacity', '0.5');
 
           // Add maximum temperature line
           chart.append('svg:path')
@@ -98,7 +98,8 @@
             .attr('d', tempLineFunc('tmax'))
             .style('fill', 'none')
             .style('stroke', 'black')
-            .style('stroke-width', '4');
+            .style('stroke-width', '4')
+            .style('opacity', '0.5');
         });
 
       function getLerwickData() {
@@ -109,7 +110,7 @@
             const keys = lines.shift().split(/\s+/);
             return lines.map((line) => {
               return line.split(/\s+/).reduce((obj, item, index) => {
-                obj[keys[index]] = parseInt(item, 10);
+                obj[keys[index]] = parseFloat(item, 10);
                 return obj;
               }, {});
             });
