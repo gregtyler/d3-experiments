@@ -6,14 +6,28 @@
     <style>body {font-family: 'Calibri';}</style>
   </head>
   <body>
+    <select></select>
     <div id="root"></div>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script type="application/javascript">
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const $select = document.querySelector('select');
 
       getLerwickData()
         .then(fullData => {
-          const data = fullData.filter(d => d.yyyy === 1940)
+          fullData
+            .map(data => data.yyyy)
+            .filter((item, index, self) => self.indexOf(item) === index)
+            .forEach(function(year) {
+              const $option = document.createElement('option');
+              $option.innerHTML = year;
+              $select.appendChild($option);
+            });
+
+          return fullData;
+        })
+        .then(fullData => {
+          const data = fullData.filter(data => data.yyyy === fullData[0].yyyy);
           const barWidth = 40;
           const chartWidth = (barWidth + 10) * data.length;
           const chartHeight = 200;
@@ -26,11 +40,11 @@
           const y = d3
             .scaleLinear()
             .domain([0, Math.max.apply(window, fullData.map(d => d.rain))])
-            .rangeRound([0, chartHeight]);
+            .range([0, chartHeight]);
           const tempY = d3
             .scaleLinear()
             .domain([Math.min.apply(window, fullData.map(d => Math.floor(d.tmin))), Math.max.apply(window, fullData.map(d => Math.ceil(d.tmax)))])
-            .rangeRound([0, chartHeight]);
+            .range([0, chartHeight]);
 
           // Create a chart
           const chart = d3.select('#root')
@@ -44,6 +58,7 @@
             .data(data)
             .enter()
               .append('svg:rect')
+              .classed('range-rainfall', true)
               .attr('x', (datum, index) => x(index))
               .attr('y', datum => chartHeight - y(datum.rain))
               .attr('height', datum => y(datum.rain))
@@ -86,6 +101,7 @@
           // Add minimum temperature line
           chart.append('svg:path')
             .datum(data)
+            .classed('path-tmin', true)
             .attr('d', tempLineFunc('tmin'))
             .style('fill', 'none')
             .style('stroke', 'black')
@@ -95,11 +111,40 @@
           // Add maximum temperature line
           chart.append('svg:path')
             .datum(data)
+            .classed('path-tmax', true)
             .attr('d', tempLineFunc('tmax'))
             .style('fill', 'none')
             .style('stroke', 'black')
             .style('stroke-width', '4')
             .style('opacity', '0.5');
+
+          function update(year) {
+            const data = fullData.filter(d => d.yyyy === year)
+
+            // Update data
+            chart.selectAll('.range-rainfall')
+              .data(data)
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .attr('height', datum => y(datum.rain));
+
+            chart.select('.path-tmin')
+              .datum(data)
+              .attr('d', tempLineFunc('tmin'));
+
+            chart.select('.path-tmax')
+              .datum(data)
+              .attr('d', tempLineFunc('tmax'));
+
+            // Update labels
+            chart.selectAll('text')
+              .data(data)
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .text(datum => datum.rain + 'mm');
+          }
+
+          document.querySelector('select').addEventListener('change', function(event) {
+            update(parseInt(event.target.value, 10));
+          });
         });
 
       function getLerwickData() {
