@@ -60,8 +60,11 @@
             .attr('height', chartHeight)
             .style('padding', '30px');
 
+          // Create group for axes
+          const frameGroup = chart.append("svg:g");
+
           // Add x-axis
-          chart.selectAll('text.xAxis')
+          frameGroup.selectAll('text.xAxis')
             .data(data)
             .enter()
               .append('svg:text')
@@ -73,7 +76,7 @@
               .attr('transform', 'translate(0, 18)');
 
           // Add y-axis
-          chart.selectAll('text.yAxisRain')
+          frameGroup.selectAll('text.yAxisRain')
             .data(y.ticks(5))
             .enter()
               .append('svg:text')
@@ -82,7 +85,7 @@
               .attr('dy', '0.25em')
               .text(datum => datum);
 
-          chart.selectAll('text.yAxisTemp')
+          frameGroup.selectAll('text.yAxisTemp')
             .data(tempY.ticks())
             .enter()
               .append('svg:text')
@@ -93,7 +96,7 @@
               .text(datum => datum);
 
           // Add y-axis ticks
-          chart.selectAll(".yTicks")
+          frameGroup.selectAll(".yTicks")
             .data(y.ticks(5))
             .enter()
             .append("svg:line")
