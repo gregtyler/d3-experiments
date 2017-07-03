@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <title>D3</title>
     <style>
-      body {font-family: 'Calibri';}
+      body {font-family: 'Calibri'; text-align: center;}
+      select {display: block; width: 100%; font-size: 2rem; padding: 1rem;}
       .range-rainfall, .path-tmin, .path-tmax { transition: all 0.3s ease-out; }
     </style>
   </head>
   <body>
-    <select></select>
+    <h1>Historic temperatures in Lerwick, Shetland</h1>
+    <select autofocus></select>
     <div id="root"></div>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script type="application/javascript">
@@ -43,44 +45,20 @@
           const y = d3
             .scaleLinear()
             .domain([0, Math.max.apply(window, fullData.map(d => d.rain))])
-            .range([0, chartHeight]);
+            .range([0, chartHeight])
+            .nice();
           const tempY = d3
             .scaleLinear()
             .domain([Math.min.apply(window, fullData.map(d => Math.floor(d.tmin))), Math.max.apply(window, fullData.map(d => Math.ceil(d.tmax)))])
-            .range([0, chartHeight]);
+            .range([0, chartHeight])
+            .nice();
 
           // Create a chart
           const chart = d3.select('#root')
             .append('svg:svg')
             .attr('width', chartWidth)
-            .attr('height', chartHeight + 30);
-
-          // Add bars
-          chart
-            .selectAll('rect')
-            .data(data)
-            .enter()
-              .append('svg:rect')
-              .classed('range-rainfall', true)
-              .attr('x', (datum, index) => x(index))
-              .attr('y', datum => chartHeight - y(datum.rain))
-              .attr('height', datum => y(datum.rain))
-              .attr('width', barWidth)
-              .attr('fill', 'blue');
-
-          // Add labels
-          chart.selectAll('text')
-            .data(data)
-            .enter()
-              .append('svg:text')
-              .attr('x', (datum, index) => x(index))
-              .attr('y', datum => chartHeight - y(datum.rain))
-              .attr('dx', barWidth / 2)
-              .attr('dy', '1.2em')
-              .attr('text-anchor', 'middle')
-              .text(datum => datum.rain + 'mm')
-              .style('font-size', '0.7rem')
-              .style('fill', 'white');
+            .attr('height', chartHeight)
+            .style('padding', '30px');
 
           // Add x-axis
           chart.selectAll('text.xAxis')
@@ -92,7 +70,66 @@
               .attr('dx', barWidth / 2)
               .attr('text-anchor', 'middle')
               .text(datum => monthNames[datum.mm - 1])
-              .attr("transform", "translate(0, 18)");
+              .attr('transform', 'translate(0, 18)');
+
+          // Add y-axis
+          chart.selectAll('text.yAxisRain')
+            .data(y.ticks(5))
+            .enter()
+              .append('svg:text')
+              .attr('x', chartWidth + 5)
+              .attr('y', datum => chartHeight - y(datum))
+              .attr('dy', '0.25em')
+              .text(datum => datum);
+
+          chart.selectAll('text.yAxisTemp')
+            .data(tempY.ticks())
+            .enter()
+              .append('svg:text')
+              .attr('x', -5)
+              .attr('y', datum => chartHeight - tempY(datum))
+              .attr('dy', '0.25em')
+              .attr('text-anchor', 'end')
+              .text(datum => datum);
+
+          // Add y-axis ticks
+          chart.selectAll(".yTicks")
+            .data(y.ticks(5))
+            .enter()
+            .append("svg:line")
+              .attr("x1", 0)
+              .attr("y1", datum => Math.round(y(datum)) + 0.5)
+              .attr("x2", chartWidth - 10)
+              .attr("y2", datum => Math.round(y(datum)) + 0.5)
+              .attr("stroke", "lightgray")
+              .attr("class", "yTicks");
+
+          // Add bars
+          chart.selectAll('rect')
+            .data(data)
+            .enter()
+              .append('svg:rect')
+              .classed('range-rainfall', true)
+              .attr('x', (datum, index) => x(index))
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .attr('height', datum => y(datum.rain))
+              .attr('width', barWidth)
+              .attr('fill', 'blue');
+
+          // Add labels
+          chart.selectAll('text.labels')
+            .data(data)
+            .enter()
+              .append('svg:text')
+              .classed('labels', true)
+              .attr('x', (datum, index) => x(index))
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .attr('dx', barWidth / 2)
+              .attr('dy', '1.2em')
+              .attr('text-anchor', 'middle')
+              .text(datum => datum.rain + 'mm')
+              .style('font-size', '0.7rem')
+              .style('fill', 'white');
 
           // A function to draw a temperature line on the graph
           function tempLineFunc(item) {
@@ -139,7 +176,7 @@
               .attr('d', tempLineFunc('tmax'));
 
             // Update labels
-            chart.selectAll('text')
+            chart.selectAll('text.labels')
               .data(data)
               .attr('y', datum => chartHeight - y(datum.rain))
               .text(datum => datum.rain + 'mm');
