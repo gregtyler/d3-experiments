@@ -12,8 +12,8 @@
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
       getLerwickData()
-        .then(data => data.filter(d => d.yyyy === 1940))
-        .then(data => {
+        .then(fullData => {
+          const data = fullData.filter(d => d.yyyy === 1940)
           const barWidth = 40;
           const chartWidth = (barWidth + 10) * data.length;
           const chartHeight = 200;
@@ -25,11 +25,11 @@
             .range([0, chartWidth]);
           const y = d3
             .scaleLinear()
-            .domain([0, Math.max.apply(window, data.map(d => d.rain))])
+            .domain([0, Math.max.apply(window, fullData.map(d => d.rain))])
             .rangeRound([0, chartHeight]);
           const tempY = d3
             .scaleLinear()
-            .domain([Math.min.apply(window, data.map(d => Math.floor(d.tmin))), Math.max.apply(window, data.map(d => Math.ceil(d.tmax)))])
+            .domain([Math.min.apply(window, fullData.map(d => Math.floor(d.tmin))), Math.max.apply(window, fullData.map(d => Math.ceil(d.tmax)))])
             .rangeRound([0, chartHeight]);
 
           // Create a chart
@@ -108,6 +108,7 @@
           .then(response => {
             const lines = response.split('\n');
             const keys = lines.shift().split(/\s+/);
+            lines.pop(); // Ignore the end line
             return lines.map((line) => {
               return line.split(/\s+/).reduce((obj, item, index) => {
                 obj[keys[index]] = parseFloat(item, 10);
