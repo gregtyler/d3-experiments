@@ -108,31 +108,31 @@
               .attr("class", "yTicks");
 
           // Add bars
-          chart.selectAll('rect')
+          const groups = chart.selectAll('rect')
             .data(data)
             .enter()
-              .append('svg:rect')
-              .classed('range-rainfall', true)
-              .attr('x', (datum, index) => x(index))
-              .attr('y', datum => chartHeight - y(datum.rain))
-              .attr('height', datum => y(datum.rain))
-              .attr('width', barWidth)
-              .attr('fill', 'blue');
+              .append('svg:g');
 
-          // Add labels
-          chart.selectAll('text.labels')
-            .data(data)
-            .enter()
-              .append('svg:text')
-              .classed('labels', true)
-              .attr('x', (datum, index) => x(index))
-              .attr('y', datum => chartHeight - y(datum.rain))
-              .attr('dx', barWidth / 2)
-              .attr('dy', '1.2em')
-              .attr('text-anchor', 'middle')
-              .text(datum => datum.rain + 'mm')
-              .style('font-size', '0.7rem')
-              .style('fill', 'white');
+          groups
+            .append('svg:rect')
+            .classed('range-rainfall', true)
+            .attr('x', (datum, index) => x(index))
+            .attr('y', datum => chartHeight - y(datum.rain))
+            .attr('height', datum => y(datum.rain))
+            .attr('width', barWidth)
+            .attr('fill', 'blue');
+
+          groups
+            .append('svg:text')
+            .classed('labels', true)
+            .attr('x', (datum, index) => x(index))
+            .attr('y', datum => chartHeight - y(datum.rain))
+            .attr('dx', barWidth / 2)
+            .attr('dy', '1.2em')
+            .attr('text-anchor', 'middle')
+            .text(datum => datum.rain + 'mm')
+            .style('font-size', '0.7rem')
+            .style('fill', 'white');
 
           // A function to draw a temperature line on the graph
           function tempLineFunc(item) {
