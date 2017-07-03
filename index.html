@@ -7,6 +7,57 @@
   <body>
     <div id="root"></div>
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script type="application/javascript"></script>
+    <script type="application/javascript">
+      getLerwickData()
+        .then(data => data.filter(d => d.yyyy === 1940))
+        .then(data => {
+          const barWidth = 40;
+          const chartWidth = (barWidth + 10) * data.length;
+          const chartHeight = 200;
+
+          // Define scales
+          const x = d3
+            .scaleLinear()
+            .domain([0, data.length])
+            .range([0, chartWidth]);
+          const y = d3
+            .scaleLinear()
+            .domain([0, Math.max.apply(window, data.map(d => d.rain))])
+            .range([0, chartHeight]);
+
+          // Create a chart
+          const chart = d3.select('#root')
+            .append('svg:svg')
+            .attr('width', chartWidth)
+            .attr('height', chartHeight);
+
+          // Add bars
+          chart
+            .selectAll('rect')
+            .data(data)
+            .enter()
+              .append('svg:rect')
+              .attr('x', (datum, index) => x(index))
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .attr('height', datum => y(datum.rain))
+              .attr('width', barWidth)
+              .attr('fill', 'blue');
+        });
+
+      function getLerwickData() {
+        return fetch('lerwick.tsv')
+          .then(response => response.text())
+          .then(response => {
+            const lines = response.split('\n');
+            const keys = lines.shift().split(/\s+/);
+            return lines.map((line) => {
+              return line.split(/\s+/).reduce((obj, item, index) => {
+                obj[keys[index]] = parseInt(item, 10);
+                return obj;
+              }, {});
+            });
+          });
+      }
+    </script>
   </body>
 </html>
