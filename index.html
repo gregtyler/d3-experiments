@@ -8,6 +8,8 @@
     <div id="root"></div>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script type="application/javascript">
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
       getLerwickData()
         .then(data => data.filter(d => d.yyyy === 1940))
         .then(data => {
@@ -29,7 +31,7 @@
           const chart = d3.select('#root')
             .append('svg:svg')
             .attr('width', chartWidth)
-            .attr('height', chartHeight);
+            .attr('height', chartHeight + 30);
 
           // Add bars
           chart
@@ -42,6 +44,31 @@
               .attr('height', datum => y(datum.rain))
               .attr('width', barWidth)
               .attr('fill', 'blue');
+
+          // Add labels
+          chart.selectAll('text')
+            .data(data)
+            .enter()
+              .append('svg:text')
+              .attr('x', (datum, index) => x(index))
+              .attr('y', datum => chartHeight - y(datum.rain))
+              .attr('dx', barWidth / 2)
+              .attr('dy', '1.2em')
+              .attr('text-anchor', 'middle')
+              .text(datum => datum.rain)
+              .attr('fill', 'white');
+
+          // Add x-axis
+          chart.selectAll('text.xAxis')
+            .data(data)
+            .enter()
+              .append('svg:text')
+              .attr('x', (datum, index) => x(index))
+              .attr('y', chartHeight)
+              .attr('dx', barWidth / 2)
+              .attr('text-anchor', 'middle')
+              .text(datum => monthNames[datum.mm - 1])
+              .attr("transform", "translate(0, 18)");
         });
 
       function getLerwickData() {
