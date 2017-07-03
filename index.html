@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>D3</title>
+    <style>body {font-family: 'Calibri';}</style>
   </head>
   <body>
     <div id="root"></div>
@@ -55,8 +56,9 @@
               .attr('dx', barWidth / 2)
               .attr('dy', '1.2em')
               .attr('text-anchor', 'middle')
-              .text(datum => datum.rain)
-              .attr('fill', 'white');
+              .text(datum => datum.rain + 'mm')
+              .style('font-size', '0.7rem')
+              .style('fill', 'white');
 
           // Add x-axis
           chart.selectAll('text.xAxis')
