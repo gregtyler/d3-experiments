@@ -7,7 +7,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
     <script type="application/javascript">
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -71,6 +71,34 @@
               .attr('text-anchor', 'middle')
               .text(datum => monthNames[datum.mm - 1])
               .attr("transform", "translate(0, 18)");
+
+          const tempY = d3
+            .scaleLinear()
+            .domain([0, Math.max.apply(window, data.map(d => d.tmax))])
+            .range([0, chartHeight]);
+
+          // A function to draw a temperature line on the graph
+          function tempLineFunc(item) {
+            return d3.line()
+              .x((datum, index) => x(index) + barWidth / 2)
+              .y(datum => chartHeight - tempY(datum[item]));
+          }
+
+          // Add minimum temperature line
+          chart.append('svg:path')
+            .datum(data)
+            .attr('d', tempLineFunc('tmin'))
+            .style('fill', 'none')
+            .style('stroke', 'black')
+            .style('stroke-width', '4');
+
+          // Add maximum temperature line
+          chart.append('svg:path')
+            .datum(data)
+            .attr('d', tempLineFunc('tmax'))
+            .style('fill', 'none')
+            .style('stroke', 'black')
+            .style('stroke-width', '4');
         });
 
       function getLerwickData() {
