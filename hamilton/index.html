@@ -19,15 +19,13 @@
         .force('charge', d3.forceManyBody())
         .force('center', d3.forceCenter(width / 2, height / 2));
 
-      d3.json('hamilton.json', function(err, data) {
-        if (err) throw err;
-
+      function draw(data) {
         const nodes = svg.append('g')
           .selectAll('circles')
           .data(data.songs)
           .enter()
             .append('svg:circle')
-            .attr('r', d => d.size * 2);
+            .attr('r', d => d.players.length * 2);
 
         nodes
           .append('title')
@@ -57,10 +55,46 @@
           .on('tick', tick)
           .force('link',
             d3.forceLink(data.connections)
+              .strength(0.01)
+              .distance(width / 2)
               .id(d => d.id)
-              .distance(100)
           );
-      });
+      }
+
+      function fetchData() {
+        let id = 0;
+        const data = {
+          songs: [],
+          connections: []
+        };
+
+        return fetch('hamilton.txt')
+          .then(r => r.text())
+          .then(r => {
+            r.trim().split('\n').forEach(line => {
+              let [title, players] = line.split('–');
+              players = players.split(',').map(p => p.trim());
+
+              // Add links to previous songs
+              data.songs.forEach(song => {
+                const crossover = players.reduce(function(count, player) {
+                  return count + (song.players.indexOf(player) > -1 ? 1 : 0);
+                }, 0);
+
+                if (crossover > 0) {
+                  data.connections.push({source: id, target: song.id, crossover});
+                }
+              });
+
+              // Add song
+              data.songs.push({id: id++, title, players});
+            });
+
+            return data;
+          });
+      }
+
+      fetchData().then(draw);
     </script>
   </body>
 </html>
