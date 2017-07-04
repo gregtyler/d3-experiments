@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <title>Hamilton</title>
     <style>
-      line { stroke: black; stroke-width: 1; }
+      circle { fill: white; stroke: #777; stroke-width: 3; }
+      line { stroke: black; stroke-width: 1; opacity: 0.4; }
     </style>
   </head>
   <body>
@@ -20,6 +21,13 @@
         .force('center', d3.forceCenter(width / 2, height / 2));
 
       function draw(data) {
+        const lines = svg.append('g')
+          .selectAll('lines')
+          .data(data.connections)
+          .enter()
+            .append('svg:line')
+            .style('stroke-width', d => d.crossover);
+
         const nodes = svg.append('g')
           .selectAll('circles')
           .data(data.songs)
@@ -30,13 +38,6 @@
         nodes
           .append('title')
             .text(d => d.title);
-
-        const lines = svg.append('g')
-          .selectAll('lines')
-          .data(data.connections)
-          .enter()
-            .append('svg:line')
-            .style('stroke-width', d => d.crossover);
 
         function tick() {
           nodes
@@ -56,7 +57,7 @@
           .force('link',
             d3.forceLink(data.connections)
               .strength(0.01)
-              .distance(width / 2)
+              .distance(d => d.crossover * 200)
               .id(d => d.id)
           );
       }
