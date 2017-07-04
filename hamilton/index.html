@@ -16,7 +16,6 @@
       const height = +svg.attr("height");
 
       const simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(function(d) { return d.id; }))
         .force('charge', d3.forceManyBody())
         .force('center', d3.forceCenter(width / 2, height / 2));
 
@@ -28,13 +27,18 @@
           .data(data.songs)
           .enter()
             .append('svg:circle')
-            .attr('r', '2.5');
+            .attr('r', d => d.size * 2);
+
+        nodes
+          .append('title')
+            .text(d => d.title);
 
         const lines = svg.append('g')
           .selectAll('lines')
           .data(data.connections)
           .enter()
-            .append('svg:line');
+            .append('svg:line')
+            .style('stroke-width', d => d.crossover);
 
         function tick() {
           nodes
@@ -54,6 +58,7 @@
           .force('link',
             d3.forceLink(data.connections)
               .id(d => d.id)
+              .distance(100)
           );
       });
     </script>
