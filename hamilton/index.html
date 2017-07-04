@@ -42,7 +42,29 @@
         function tick() {
           nodes
             .attr('cx', d => d.x)
-            .attr('cy', d => d.y);
+            .attr('cy', d => d.y)
+            .each(node => {
+              var radius = (node.players.length * 2) + 2;
+              if (node.x - radius < 0) {
+                  node.x = radius;
+                  node.vx = 0;
+              }
+
+              if (node.y - radius < 0) {
+                  node.y = radius;
+                  node.vy = 0;
+              }
+
+              if (node.x + radius > width) {
+                  node.x = width - radius;
+                  node.vx = 0;
+              }
+
+              if (node.y + radius > height) {
+                  node.y = height - radius;
+                  node.vy = 0;
+              }
+            });
 
           lines
             .attr('x1', d => d.source.x)
