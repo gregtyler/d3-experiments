@@ -1,0 +1,12 @@
+{
+  "songs": [
+    {"id": "abs", "name": "Aaron Burr, Sir"},
+    {"id": "ms", "name": "My Shot"},
+    {"id": "tsot", "name": "The Story of Tonight"}
+  ],
+  "connections": [
+    {"source": "abs", "target": "ms", "value": 3},
+    {"source": "abs", "target": "tsot", "value": 4},
+    {"source": "ms", "target": "tsot", "value": 4}
+  ]
+}

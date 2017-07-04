@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hamilton</title>
+    <style>
+      line { stroke: black; stroke-width: 1; }
+    </style>
+  </head>
+  <body>
+    <svg width="960" height="600"></svg>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script type="application/javascript">
+      const svg = d3.select("svg");
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+
+      const simulation = d3.forceSimulation()
+        .force('link', d3.forceLink().id(function(d) { return d.id; }))
+        .force('charge', d3.forceManyBody())
+        .force('center', d3.forceCenter(width / 2, height / 2));
+
+      d3.json('hamilton.json', function(err, data) {
+        if (err) throw err;
+
+        const nodes = svg.append('g')
+          .selectAll('circles')
+          .data(data.songs)
+          .enter()
+            .append('svg:circle')
+            .attr('r', '2.5');
+
+        const lines = svg.append('g')
+          .selectAll('lines')
+          .data(data.connections)
+          .enter()
+            .append('svg:line');
+
+        function tick() {
+          nodes
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y);
+
+          lines
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+        }
+
+        simulation
+          .nodes(data.songs)
+          .on('tick', tick)
+          .force('link',
+            d3.forceLink(data.connections)
+              .id(d => d.id)
+          );
+      });
+    </script>
+  </body>
+</html>
