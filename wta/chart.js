@@ -48,9 +48,9 @@ function buildChart(data) {
   const chartWidth = 800;
   const chartHeight = 300;
   const chartPadding = 30;
-  const barGapX = 50;
+  const barGapX = 30;
   const barGapY = 0;
-  const barWidth = 60;
+  const barWidth = 0;
   const barHeight = (chartHeight / 10) - barGapY;
   const sites = [];
 
@@ -99,6 +99,7 @@ function buildChart(data) {
     const playerGroup = barGroup
       .append('svg:g')
       .classed('player-' + player.id, true);
+
     // Add bar
     playerGroup.selectAll('bars.player' + player.id)
       .data(player.ranks)
@@ -179,12 +180,12 @@ function buildChart(data) {
     .data(years)
     .enter()
       .append('svg:text')
-      .attr('x', year => x(year))
-      .attr('y', chartHeight + chartPadding)
-      .attr('dx', barWidth / 2)
+      .attr('x', 0)
+      .attr('y', 0)
       .attr('text-anchor', 'middle')
       .text(datum => datum)
-      .attr('transform', 'translate(0, 18)');
+      .style('transform', year => `translate(${x(year) + (barWidth / 2) + 4}px, ${chartHeight + chartPadding + 13}px) rotate(-90deg)`)
+      .style('font-size', '13px');
 
   const voronoi = d3
     .voronoi()
@@ -217,10 +218,14 @@ function buildChart(data) {
       // Don't show anyone as selected
       barGroup.classed('faded', false);
       document.querySelectorAll('.selected').forEach($selected => $selected.classList.remove('selected'));
+      $selected.innerHTML = '<em>Hover over a bar to see player information</em>';
     });
 
 }
 
 fetchPlayers()
+  .then(fetchRankings.bind(window, '1980'))
+  .then(fetchRankings.bind(window, '1990'))
+  .then(fetchRankings.bind(window, '2000'))
   .then(fetchRankings.bind(window, '2010'))
   .then(buildChart);
