@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    {"id": "marty", "name": "Marty", "played": true},
+    {"id": "chuck", "name": "Chuck", "played": true},
+    {"id": "lorrainesue", "name": "Lorranie Sue", "played": true},
+    {"id": "lorrainemay", "name": "Lorranie May", "played": true},
+    {"id": "bollino", "name": "Father Guiberto Bollino", "played": true},
+    {"id": "margot", "name": "Margot Margeau", "played": false},
+    {"id": "martin", "name": "Martin Margeau", "played": false},
+    {"id": "boss", "name": "Stan Bossman", "played": false},
+    {"id": "dave", "name": "Dave", "played": false}
+  ],
+  "links": [
+    {"source": "marty", "target": "chuck", "link": "criminal"},
+    {"source": "marty", "target": "lorrainemay", "link": "work"},
+    {"source": "marty", "target": "boss", "link": "work"},
+    {"source": "marty", "target": "dave", "link": "social"},
+    {"source": "chuck", "target": "bollino", "link": "social"},
+    {"source": "chuck", "target": "boss", "link": "work"},
+    {"source": "chuck", "target": "dave", "link": "social"},
+    {"source": "chuck", "target": "margot", "link": "affair"},
+    {"source": "lorrainesue", "target": "lorrainemay", "link": "romance"},
+    {"source": "lorrainesue", "target": "bollino", "link": "affair"},
+    {"source": "bollino", "target": "margot", "link": "affair"},
+    {"source": "bollino", "target": "martin", "link": "social"},
+    {"source": "margot", "target": "martin", "link": "romance"},
+    {"source": "boss", "target": "martin", "link": "school"}
+  ]
+}
