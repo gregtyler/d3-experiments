@@ -25,7 +25,7 @@
       const chartWidth = 800;
       const chartHeight = 600;
       const chartPadding = 30;
-      const barGapX = 20;
+      const barGapX = 50;
       const barGapY = 10;
       const barWidth = 60;
       const barHeight = (chartHeight / 10) - barGapY;
@@ -81,10 +81,15 @@
           // Add links
           function linkPath(datum, index, ranks) {
             var path = d3.path();
-            path.moveTo(x(index) + barWidth, y(datum.rank));
-            path.lineTo(x(index) + barWidth, y(datum.rank) + barHeight)
-            path.lineTo(x(index + 1), y(ranks[index + 1].rank) + barHeight);
-            path.lineTo(x(index + 1), y(ranks[index + 1].rank));
+            var x1 = x(index) + barWidth;
+            var y1 = y(datum.rank);
+            var x2 = x(index + 1);
+            var y2 = y(ranks[index + 1].rank);
+
+            path.moveTo(x1, y1);
+            path.bezierCurveTo(x1 + (barGapX / 2), y1, x2 - (barGapX / 2), y2, x2, y2);
+            path.lineTo(x2, y2 + barHeight);
+            path.bezierCurveTo(x2 - (barGapX / 2), y2 + barHeight, x1 + (barGapX / 2), y1 + barHeight, x1, y1 + barHeight);
             path.closePath();
             return path.toString();
           }
