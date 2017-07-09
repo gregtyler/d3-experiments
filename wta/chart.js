@@ -44,9 +44,13 @@ function buildChart(data) {
   const chartHeight = 300;
   const chartPadding = 30;
   const barGapX = 50;
-  const barGapY = 10;
+  const barGapY = 0;
   const barWidth = 60;
   const barHeight = (chartHeight / 10) - barGapY;
+
+  function getBarHeight(year, player) {
+    return barHeight * (year - player.dob.substr(0, 4) - 10) / 30;
+  }
 
   const years = data.reduce((prev, player) => {
       player.ranks.forEach(rank => prev.push(rank.year));
@@ -85,7 +89,7 @@ function buildChart(data) {
         .attr('x', datum => x(datum.year))
         .attr('y', datum => y(datum.rank))
         .attr('width', barWidth)
-        .attr('height', barHeight)
+        .attr('height', datum => getBarHeight(datum.year, player))
         .attr('fill', player.colour)
         .on('mouseover', () => {
           barGroup.classed('faded', true);
@@ -101,20 +105,23 @@ function buildChart(data) {
      * Define a path for a link between years
      * @param {Object} datum The data that is being linked to the next year
      * @param {Number} index The index of the datum amongst the ranks of the player
-     * @param {Object} ranks All of the player's ranks
+     * @param {Object} player The player data
+     * @returns {String} A string to use in the "d" attribute of an SVG path
      */
-    function linkPath(datum, index, ranks) {
+    function linkPath(datum, index, player) {
       const path = d3.path();
-      const next = ranks.find(rank => rank.year === datum.year + 1);
+      const next = player.ranks.find(rank => rank.year === datum.year + 1);
       const x1 = x(datum.year) + barWidth;
       const y1 = y(datum.rank);
       const x2 = x(datum.year + 1);
       const y2 = next ? y(next.rank) : y(datum.rank + 10);
+      const barHeight1 = getBarHeight(datum.year, player);
+      const barHeight2 = getBarHeight(datum.year + 1, player);
 
       path.moveTo(x1, y1);
       path.bezierCurveTo(x1 + (barGapX / 2), y1, x2 - (barGapX / 2), y2, x2, y2);
-      path.lineTo(x2, y2 + barHeight);
-      path.bezierCurveTo(x2 - (barGapX / 2), y2 + barHeight, x1 + (barGapX / 2), y1 + barHeight, x1, y1 + barHeight);
+      path.lineTo(x2, y2 + barHeight2);
+      path.bezierCurveTo(x2 - (barGapX / 2), y2 + barHeight2, x1 + (barGapX / 2), y1 + barHeight1, x1, y1 + barHeight1);
       path.closePath();
       return path.toString();
     }
@@ -124,7 +131,7 @@ function buildChart(data) {
       .data(player.ranks)
       .enter()
         .append('svg:path')
-        .attr('d', (datum, index) => linkPath(datum, index, player.ranks))
+        .attr('d', (datum, index) => linkPath(datum, index, player))
         .attr('fill', player.colour);
   });
 
