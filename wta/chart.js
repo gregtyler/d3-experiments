@@ -43,6 +43,7 @@ function fetchRankings(decade, players) {
  * @param {Object} data The rankings data to use in the chart
  */
 function buildChart(data) {
+  const $root = document.querySelector('#root');
   const $selected = document.querySelector('#selected');
   const chartWidth = 800;
   const chartHeight = 300;
@@ -51,6 +52,7 @@ function buildChart(data) {
   const barGapY = 0;
   const barWidth = 60;
   const barHeight = (chartHeight / 10) - barGapY;
+  const sites = [];
 
   // Determine which years we're working with
   const years = data.reduce((prev, player) => {
@@ -92,8 +94,11 @@ function buildChart(data) {
   // Add bars
   const barGroup = chart.append('svg:g');
   data.forEach(function(player) {
+    if (player.ranks.length === 0) return true;
     player.colour = d3.color(`hsl(${Math.random() * 360 | 0}, 70%, 70%)`);
-    const playerGroup = barGroup.append('svg:g');
+    const playerGroup = barGroup
+      .append('svg:g')
+      .classed('player-' + player.id, true);
     // Add bar
     playerGroup.selectAll('bars.player' + player.id)
       .data(player.ranks)
@@ -104,16 +109,7 @@ function buildChart(data) {
         .attr('width', barWidth)
         .attr('height', datum => getBarHeight(datum.year, player.dob))
         .attr('fill', player.colour)
-        .on('mouseover', () => {
-          $selected.innerHTML = player.forename + ' ' + player.surname;
-          barGroup.classed('faded', true);
-          playerGroup.classed('active', true);
-        })
-        .on('mouseout', () => {
-          $selected.innerHTML = 'Hover over a bar to see player\'s name';
-          barGroup.classed('faded', false);
-          playerGroup.classed('active', false);
-        });
+        .each(rank => {sites.push([rank, player]);});
 
     // Add links
     /**
@@ -189,6 +185,40 @@ function buildChart(data) {
       .attr('text-anchor', 'middle')
       .text(datum => datum)
       .attr('transform', 'translate(0, 18)');
+
+  const voronoi = d3
+    .voronoi()
+    .extent([[chartPadding, chartPadding], [chartWidth + chartPadding, chartHeight + chartPadding]])
+    .x(d => x(d[0].year) + barWidth / 2)
+    .y(d => y(d[0].rank) + barHeight / 2)
+    (sites);
+
+  chart.append('rect')
+    .attr('x', chartPadding)
+    .attr('y', chartPadding)
+    .attr('width', chartWidth + chartPadding)
+    .attr('height', chartHeight + chartPadding)
+    .attr('fill', 'transparent')
+    .on('mousemove', () => {
+      // Find the nearest site
+      const [mx, my] = d3.mouse($root);
+      const site = voronoi.find(mx, my);
+      // Get the player for that site
+      const player = site.data[1];
+
+      barGroup.classed('faded', true);
+
+      // Mark that as the selected player
+      document.querySelectorAll('.selected').forEach($selected => $selected.classList.remove('selected'));
+      $selected.innerHTML = player.forename + ' ' + player.surname;
+      d3.select('.player-' + player.id).classed('selected', true);
+    })
+    .on('mouseleave', () => {
+      // Don't show anyone as selected
+      barGroup.classed('faded', false);
+      document.querySelectorAll('.selected').forEach($selected => $selected.classList.remove('selected'));
+    });
+
 }
 
 fetchPlayers()
