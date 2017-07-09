@@ -48,8 +48,13 @@ function buildChart(data) {
   const barWidth = 60;
   const barHeight = (chartHeight / 10) - barGapY;
 
-  function getBarHeight(year, player) {
-    return barHeight * (year - player.dob.substr(0, 4) - 10) / 30;
+  /**
+   * Work out how thick a player's bar should be, based on their age
+   * @param {Integer} year The year the ranking is of
+   * @param {Integer} dobYear The player's date of birth
+   */
+  function getBarHeight(year, dob) {
+    return barHeight * (year - dob.substr(0, 4) - 10) / 30;
   }
 
   const years = data.reduce((prev, player) => {
@@ -79,7 +84,7 @@ function buildChart(data) {
   // Add bars
   const barGroup = chart.append('svg:g');
   data.forEach(function(player) {
-    player.colour = d3.color(`hsl(${Math.random() * 360 | 0}, 50%, 50%)`);
+    player.colour = d3.color(`hsl(${Math.random() * 360 | 0}, 70%, 70%)`);
     const playerGroup = barGroup.append('svg:g');
     // Add bar
     playerGroup.selectAll('bars.' + player.name)
@@ -89,7 +94,7 @@ function buildChart(data) {
         .attr('x', datum => x(datum.year))
         .attr('y', datum => y(datum.rank))
         .attr('width', barWidth)
-        .attr('height', datum => getBarHeight(datum.year, player))
+        .attr('height', datum => getBarHeight(datum.year, player.dob))
         .attr('fill', player.colour)
         .on('mouseover', () => {
           barGroup.classed('faded', true);
@@ -115,8 +120,8 @@ function buildChart(data) {
       const y1 = y(datum.rank);
       const x2 = x(datum.year + 1);
       const y2 = next ? y(next.rank) : y(datum.rank + 10);
-      const barHeight1 = getBarHeight(datum.year, player);
-      const barHeight2 = getBarHeight(datum.year + 1, player);
+      const barHeight1 = getBarHeight(datum.year, player.dob);
+      const barHeight2 = getBarHeight(datum.year + 1, player.dob);
 
       path.moveTo(x1, y1);
       path.bezierCurveTo(x1 + (barGapX / 2), y1, x2 - (barGapX / 2), y2, x2, y2);
@@ -126,7 +131,7 @@ function buildChart(data) {
       return path.toString();
     }
 
-    player.colour.opacity = 0.5;
+    player.colour.opacity = 0.8;
     playerGroup.selectAll('links.' + player.name)
       .data(player.ranks)
       .enter()
