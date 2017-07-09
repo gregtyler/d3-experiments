@@ -90,20 +90,7 @@ function build(data) {
           if (!d3.event.active) simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;
-        }))
-      .on('mouseenter', (e) => {
-        chart.classed('faded', true);
-        d3.event.currentTarget.classList.add('active');
-        details.text(e.name);
-        lines
-          .filter(l => l.target.id === e.id || l.source.id === e.id)
-          .classed('active', true);
-      })
-      .on('mouseleave', () => {
-        chart.classed('faded', false);
-        document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
-        details.text('');
-      });
+        }));
 
   /**
    * After the chart has been changed (due to force), make sure nothing is over the edge
@@ -150,8 +137,40 @@ function build(data) {
         .id(d => d.id)
     );
 
+  // Create a Voronoi to handle node hovering
+  const nodeVoronoi = d3
+    .voronoi()
+    .extent([[0, 0], [chartWidth, chartHeight]])
+    .x(d => d.x)
+    .y(d => d.y);
+
+  chart.append('svg:rect')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', chartWidth)
+    .attr('height', chartHeight)
+    .attr('fill', 'transparent')
+    .on('mousemove', () => {
+      // Find the nearest site
+      const [mx, my] = d3.mouse($root);
+      const site = nodeVoronoi(nodes.data()).find(mx, my);
+
+      chart.classed('faded', true);
+      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+      nodes.filter(d => d.id === site.data.id).classed('active', true);
+      details.text(site.data.name);
+      lines
+        .filter(l => l.target.id === site.data.id || l.source.id === site.data.id)
+        .classed('active', true);
+    })
+    .on('mouseleave', () => {
+      chart.classed('faded', false);
+      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+      details.text('');
+    });
+
   // Create a Voronoi to handle legend hovering
-  const voronoi = d3
+  const legendVoronoi = d3
     .voronoi()
     .extent([[chartWidth, 0], [chartWidth + legendWidth, legendHeight]])
     .x(chartWidth)
@@ -167,7 +186,7 @@ function build(data) {
     .on('mousemove', () => {
       // Find the nearest site
       const [mx, my] = d3.mouse($root);
-      const site = voronoi.find(mx, my);
+      const site = legendVoronoi.find(mx, my);
 
       chart.classed('faded', true);
       chart.classed('faded--legend', true);
