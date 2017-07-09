@@ -45,7 +45,18 @@ function build(data) {
           if (!d3.event.active) simulation.alphaTarget(0);
           d.fx = null;
           d.fy = null;
-        }));
+        }))
+      .on('mouseenter', (e) => {
+        chart.classed('faded', true);
+        d3.event.currentTarget.classList.add('active');
+        lines
+          .filter(l => l.target.id === e.id || l.source.id === e.id)
+          .classed('active', true);
+      })
+      .on('mouseleave', () => {
+        chart.classed('faded', false);
+        document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+      });
 
   nodes
     .append('title')
