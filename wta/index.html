@@ -76,6 +76,25 @@
               .attr('width', barWidth)
               .attr('height', barHeight)
               .attr('fill', player.colour);
+
+          // Add links
+          function linkPath(datum, index, ranks) {
+            var path = d3.path();
+            path.moveTo(x(index) + barWidth, y(datum.rank));
+            path.lineTo(x(index) + barWidth, y(datum.rank) + barHeight)
+            path.lineTo(x(index + 1), y(ranks[index + 1].rank) + barHeight);
+            path.lineTo(x(index + 1), y(ranks[index + 1].rank));
+            path.closePath();
+            return path.toString();
+          }
+
+          player.colour.opacity = 0.5;
+          barGroup.selectAll('links.' + player.name)
+            .data(player.ranks.slice(0, -1))
+            .enter()
+              .append('svg:path')
+              .attr('d', (datum, index) => linkPath(datum, index, player.ranks))
+              .attr('fill', player.colour);
         });
 
     </script>
