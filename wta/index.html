@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WTA</title>
+    <style>
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script type="application/javascript">
+      const data = [
+        {name: "Fiona",   ranks: [{year: 2001, rank: 1}, {year: 2002, rank: 6}]},
+        {name: "Martina", ranks: [{year: 2001, rank: 2}, {year: 2002, rank: 5}]},
+        {name: "Jo",      ranks: [{year: 2001, rank: 3}, {year: 2002, rank: 4}]},
+        {name: "Doris",   ranks: [{year: 2001, rank: 4}, {year: 2002, rank: 2}]},
+        {name: "Jessica", ranks: [{year: 2001, rank: 5}, {year: 2002, rank: 1}]},
+        {name: "Parta",   ranks: [{year: 2001, rank: 6}, {year: 2002, rank: 7}]},
+        {name: "Keira",   ranks: [{year: 2001, rank: 7}, {year: 2002, rank: 3}]},
+        {name: "Nimona",  ranks: [{year: 2001, rank: 8}, {year: 2002, rank: 9}]},
+        {name: "Sate",    ranks: [{year: 2001, rank: 9}, {year: 2002, rank: 10}]},
+        {name: "Relia",   ranks: [{year: 2001, rank: 10}, {year: 2002, rank: 8}]}
+      ];
+      const chartWidth = 800;
+      const chartHeight = 600;
+      const chartPadding = 30;
+      const barGapX = 20;
+      const barGapY = 10;
+      const barWidth = 60;
+      const barHeight = (chartHeight / 10) - barGapY;
+
+      // Define ranges
+      const x = d3
+        .scaleLinear()
+        .domain([0, data[0].ranks.length])
+        .range([0, (barWidth + barGapX) * data[0].ranks.length]);
+      const y = d3
+        .scaleLinear()
+        .domain([1, 11])
+        .range([0, chartHeight])
+        .nice();
+
+      // Create a chart
+      const chart = d3.select('#root')
+        .append('svg:svg')
+        .attr('width', chartWidth + (chartPadding * 2))
+        .attr('height', chartHeight + (chartPadding * 2));
+
+
+        // Create group for axes
+        const frameGroup = chart.append('svg:g');
+
+        // Add x-axis
+        frameGroup.selectAll('text.xAxis')
+          .data([2001, 2002])
+          .enter()
+            .append('svg:text')
+            .attr('x', (datum, index) => x(index))
+            .attr('y', chartHeight)
+            .attr('text-anchor', 'middle')
+            .text(datum => datum)
+            .attr('transform', 'translate(0, 18)');
+
+        // Add bars
+        const barGroup = chart.append('svg:g');
+        data.forEach(function(player) {
+          player.colour = d3.color(`hsl(${Math.random() * 360 | 0}, 50%, 50%)`);
+          // Add bar
+          barGroup.selectAll('bars.' + player.name)
+            .data(player.ranks)
+            .enter()
+              .append('svg:rect')
+              .attr('x', (datum, index) => x(index))
+              .attr('y', (datum) => y(datum.rank))
+              .attr('width', barWidth)
+              .attr('height', barHeight)
+              .attr('fill', player.colour);
+        });
+
+    </script>
+  </body>
+</html>
