@@ -15,11 +15,12 @@ function fetchPlayers() {
 
 /**
  * Retrieve the data for the WTA rankings
+ * @param {Integer} decade The decade of stats to fetch
  * @param {Object} players An array of the players to rank
  * @returns {Object} The array of players, now with rankings
  */
-function fetchRankings(players) {
-  return fetch('rankings.csv')
+function fetchRankings(decade, players) {
+  return fetch(`wta_rankings_${decade}s.csv`)
     .then(resp => resp.text())
     .then(content => {
       d3.csvParse(content)
@@ -156,10 +157,12 @@ function buildChart(data) {
       if (typeof next === 'undefined') next = {year: rank.year + 1, rank: rank.rank + 10};
 
       // Draw a link to the next rank
-      playerGroup
-        .append('svg:path')
-        .attr('d', linkPath(rank, next))
-        .attr('fill', player.colour);
+      if (rank.year !== maxYear) {
+        playerGroup
+          .append('svg:path')
+          .attr('d', linkPath(rank, next))
+          .attr('fill', player.colour);
+      }
     });
   });
 
@@ -189,5 +192,5 @@ function buildChart(data) {
 }
 
 fetchPlayers()
-  .then(fetchRankings)
+  .then(fetchRankings.bind(window, '2010'))
   .then(buildChart);
