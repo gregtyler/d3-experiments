@@ -12,6 +12,8 @@ const chart = d3.select('#root')
   .attr('height', chartHeight)
   .style('padding', '30px');
 
+const $root = chart.node();
+
 // Create simulation
 const simulation = d3.forceSimulation()
   .force('charge', d3.forceManyBody().strength(-2000))
@@ -24,6 +26,7 @@ const simulation = d3.forceSimulation()
 function build(data) {
   let nodes = null;
   let lines = null;
+  const sites = [];
 
   // Add the legend
   const linkTypes = data.links
@@ -31,34 +34,21 @@ function build(data) {
     .filter((item, index, arr) => arr.indexOf(item) === index);
 
   const legendY = d3.scaleLinear()
-    .domain([0, linkTypes.length])
+    .domain([1, linkTypes.length + 1])
     .range([40, 40 + legendHeight]);
 
-  const legendLinks = chart.selectAll('legendLinks')
+  const legend = chart.append('svg:g');
+  const legendLinks = legend.selectAll('legendLinks')
     .data(linkTypes)
     .enter()
       .append('svg:g')
-      .classed('legend', true);
-
-  legendLinks
-    .on('mouseenter', (e) => {
-      chart.classed('faded', true);
-      chart.classed('faded--legend', true);
-      d3.event.currentTarget.classList.add('active');
-      lines
-        .filter(l => l.link === e)
-        .classed('active', true);
-    })
-    .on('mouseleave', () => {
-      chart.classed('faded', false);
-      chart.classed('faded--legend', false);
-      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
-    });
+      .classed('legend', true)
+      .each(legend => {sites.push(legend);});
 
   legendLinks
     .append('svg:circle')
       .attr('cx', chartWidth + 10)
-      .attr('cy', (d, index) => legendY(index))
+      .attr('cy', (d, index) => legendY(index) - 4)
       .attr('class', d => 'legend-dot legend-dot--' + d)
       .attr('r', 5);
 
@@ -66,10 +56,9 @@ function build(data) {
     .append('svg:text')
       .attr('x', chartWidth + 20)
       .attr('y', (d, index) => legendY(index))
-      .attr('dy', '0.25em')
       .text(d => d.substr(0, 1).toUpperCase() + d.substr(1));
 
-  const details = chart
+  const details = legend
     .append('svg:text')
       .attr('x', chartWidth)
       .attr('y', 60 + legendHeight)
@@ -160,6 +149,39 @@ function build(data) {
       d3.forceLink(data.links)
         .id(d => d.id)
     );
+
+  // Create a Voronoi to handle legend hovering
+  const voronoi = d3
+    .voronoi()
+    .extent([[chartWidth, 0], [chartWidth + legendWidth, legendHeight]])
+    .x(chartWidth)
+    .y((d, index) => legendY(index))
+    (sites);
+
+  chart.append('svg:rect')
+    .attr('x', chartWidth)
+    .attr('y', 0)
+    .attr('width', chartWidth + legendWidth)
+    .attr('height', legendHeight)
+    .attr('fill', 'transparent')
+    .on('mousemove', () => {
+      // Find the nearest site
+      const [mx, my] = d3.mouse($root);
+      const site = voronoi.find(mx, my);
+
+      chart.classed('faded', true);
+      chart.classed('faded--legend', true);
+      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+      legendLinks.filter(d => d === site.data).classed('active', true);
+      lines
+        .filter(l => l.link === site.data)
+        .classed('active', true);
+    })
+    .on('mouseleave', () => {
+      chart.classed('faded', false);
+      chart.classed('faded--legend', false);
+      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+    });
 }
 
 /**
