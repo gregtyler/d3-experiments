@@ -1,3 +1,7 @@
+/**
+ * Retrieve the data for the WTA players
+ * @returns {Object} An array of player data from the CSV
+ */
 function fetchPlayers() {
   return fetch('players.csv')
     .then(resp => resp.text())
@@ -9,6 +13,11 @@ function fetchPlayers() {
     });
 }
 
+/**
+ * Retrieve the data for the WTA rankings
+ * @param {Object} players An array of the players to rank
+ * @returns {Object} The array of players, now with rankings
+ */
 function fetchRankings(players) {
   return fetch('rankings.csv')
     .then(resp => resp.text())
@@ -26,6 +35,10 @@ function fetchRankings(players) {
     });
 }
 
+/**
+ * Build the chart
+ * @param {Object} data The rankings data to use in the chart
+ */
 function buildChart(data) {
   const chartWidth = 800;
   const chartHeight = 300;
@@ -46,11 +59,11 @@ function buildChart(data) {
   const x = d3
     .scaleLinear()
     .domain([Math.min.apply(window, years), Math.max.apply(window, years)])
-    .range([0, (barWidth + barGapX) * years.length]);
+    .range([chartPadding, chartPadding + ((barWidth + barGapX) * years.length)]);
   const y = d3
     .scaleLinear()
     .domain([1, 11])
-    .range([0, chartHeight])
+    .range([chartPadding, chartPadding + chartHeight])
     .nice();
 
   // Create a chart
@@ -58,21 +71,6 @@ function buildChart(data) {
     .append('svg:svg')
     .attr('width', chartWidth + (chartPadding * 2))
     .attr('height', chartHeight + (chartPadding * 2));
-
-  // Create group for axes
-  const frameGroup = chart.append('svg:g');
-
-  // Add x-axis
-  frameGroup.selectAll('text.xAxis')
-    .data(years)
-    .enter()
-      .append('svg:text')
-      .attr('x', year => x(year))
-      .attr('y', chartHeight)
-      .attr('dx', barWidth / 2)
-      .attr('text-anchor', 'middle')
-      .text(datum => datum)
-      .attr('transform', 'translate(0, 18)');
 
   // Add bars
   const barGroup = chart.append('svg:g');
@@ -129,6 +127,30 @@ function buildChart(data) {
         .attr('d', (datum, index) => linkPath(datum, index, player.ranks))
         .attr('fill', player.colour);
   });
+
+  // Create group for axes and framing
+  const frameGroup = chart.append('svg:g');
+
+  // Add a bar to cover the players diving out of the rankings
+  frameGroup
+    .append('svg:rect')
+    .attr('x', 0)
+    .attr('y', chartHeight + chartPadding)
+    .attr('width', chartWidth + (chartPadding * 2))
+    .attr('height', chartPadding)
+    .attr('fill', 'white');
+
+  // Add x-axis
+  frameGroup.selectAll('text.xAxis')
+    .data(years)
+    .enter()
+      .append('svg:text')
+      .attr('x', year => x(year))
+      .attr('y', chartHeight + chartPadding)
+      .attr('dx', barWidth / 2)
+      .attr('text-anchor', 'middle')
+      .text(datum => datum)
+      .attr('transform', 'translate(0, 18)');
 }
 
 fetchPlayers()
