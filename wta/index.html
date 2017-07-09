@@ -58,6 +58,7 @@
             .append('svg:text')
             .attr('x', (datum, index) => x(index))
             .attr('y', chartHeight)
+            .attr('dx', barWidth / 2)
             .attr('text-anchor', 'middle')
             .text(datum => datum)
             .attr('transform', 'translate(0, 18)');
