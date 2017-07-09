@@ -2,7 +2,7 @@
 const chartWidth = 600;
 const chartHeight = 600;
 const legendWidth = 200;
-const legendHeight = 100;
+const legendHeight = 135;
 const characterRadius = 10;
 
 // Create SVG
