@@ -1,12 +1,14 @@
 // Variables
-const chartWidth = 800;
+const chartWidth = 600;
 const chartHeight = 600;
+const legendWidth = 200;
+const legendHeight = 100;
 const characterRadius = 10;
 
 // Create SVG
 const chart = d3.select('#root')
   .append('svg:svg')
-  .attr('width', chartWidth)
+  .attr('width', chartWidth + legendWidth)
   .attr('height', chartHeight)
   .style('padding', '30px');
 
@@ -20,6 +22,57 @@ const simulation = d3.forceSimulation()
  * @param {Object} data The data to use to build the chart
  */
 function build(data) {
+  // Add the legend
+  const linkTypes = data.links
+    .map(link => link.link)
+    .filter((item, index, arr) => arr.indexOf(item) === index);
+
+  const legendY = d3.scaleLinear()
+    .domain([0, linkTypes.length])
+    .range([40, 40 + legendHeight]);
+
+  const legendLinks = chart.selectAll('legendLinks')
+    .data(linkTypes)
+    .enter()
+      .append('svg:g')
+      .classed('legend', true);
+
+  legendLinks
+    .on('mouseenter', (e) => {
+      chart.classed('faded', true);
+      chart.classed('faded--legend', true);
+      d3.event.currentTarget.classList.add('active');
+      lines
+        .filter(l => l.link === e)
+        .classed('active', true);
+    })
+    .on('mouseleave', () => {
+      chart.classed('faded', false);
+      chart.classed('faded--legend', false);
+      document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+    });
+
+  legendLinks
+    .append('svg:circle')
+      .attr('cx', chartWidth + 10)
+      .attr('cy', (d, index) => legendY(index))
+      .attr('class', d => 'legend-dot legend-dot--' + d)
+      .attr('r', 5);
+
+  legendLinks
+    .append('svg:text')
+      .attr('x', chartWidth + 20)
+      .attr('y', (d, index) => legendY(index))
+      .attr('dy', '0.25em')
+      .text(d => d.substr(0, 1).toUpperCase() + d.substr(1));
+
+  const details = chart
+    .append('svg:text')
+      .attr('x', chartWidth)
+      .attr('y', 60 + legendHeight)
+      .style('font-weight', 'bold');
+
+  // Build the force diagram
   const lines = chart.append('g')
     .selectAll('lines')
     .data(data.links)
@@ -49,6 +102,7 @@ function build(data) {
       .on('mouseenter', (e) => {
         chart.classed('faded', true);
         d3.event.currentTarget.classList.add('active');
+        details.text(e.name);
         lines
           .filter(l => l.target.id === e.id || l.source.id === e.id)
           .classed('active', true);
@@ -56,11 +110,8 @@ function build(data) {
       .on('mouseleave', () => {
         chart.classed('faded', false);
         document.querySelectorAll('.active').forEach($active => $active.classList.remove('active'));
+        details.text('');
       });
-
-  nodes
-    .append('title')
-      .text(d => d.name);
 
   /**
    * After the chart has been changed (due to force), make sure nothing is over the edge
@@ -98,6 +149,7 @@ function build(data) {
       .attr('y2', d => d.target.y);
   }
 
+  // Start the simulation
   simulation
     .nodes(data.nodes)
     .on('tick', tick)
