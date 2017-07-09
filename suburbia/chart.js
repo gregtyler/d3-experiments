@@ -14,7 +14,7 @@ const chart = d3.select('#root')
 
 // Create simulation
 const simulation = d3.forceSimulation()
-  .force('charge', d3.forceManyBody())
+  .force('charge', d3.forceManyBody().strength(-2000))
   .force('center', d3.forceCenter(chartWidth / 2, chartHeight / 2));
 
 /**
@@ -158,8 +158,6 @@ function build(data) {
     .on('tick', tick)
     .force('link',
       d3.forceLink(data.links)
-        .strength(0.05)
-        .distance(300)
         .id(d => d.id)
     );
 }
