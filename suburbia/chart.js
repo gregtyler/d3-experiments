@@ -33,7 +33,19 @@ function build(data) {
     .enter()
       .append('svg:circle')
       .attr('r', d => (d.played ? 2 : 1) * characterRadius)
-      .classed('character', true);
+      .classed('character', true)
+      .call(d3.drag()
+        .on('start', d => {
+          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', d => {d.fx = d3.event.x; d.fy = d3.event.y;})
+        .on('end', d => {
+          if (!d3.event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }));
 
   nodes
     .append('title')
@@ -80,8 +92,8 @@ function build(data) {
     .on('tick', tick)
     .force('link',
       d3.forceLink(data.links)
-        .strength(0.01)
-        .distance(500)
+        .strength(0.05)
+        .distance(300)
         .id(d => d.id)
     );
 }
