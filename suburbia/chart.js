@@ -22,6 +22,9 @@ const simulation = d3.forceSimulation()
  * @param {Object} data The data to use to build the chart
  */
 function build(data) {
+  let nodes = null;
+  let lines = null;
+
   // Add the legend
   const linkTypes = data.links
     .map(link => link.link)
@@ -73,14 +76,14 @@ function build(data) {
       .style('font-weight', 'bold');
 
   // Build the force diagram
-  const lines = chart.append('g')
+  lines = chart.append('g')
     .selectAll('lines')
     .data(data.links)
     .enter()
       .append('svg:line')
       .attr('class', d => 'connection connection--' + d.link);
 
-  const nodes = chart.append('g')
+  nodes = chart.append('g')
     .selectAll('circles')
     .data(data.nodes)
     .enter()
