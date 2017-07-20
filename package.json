@@ -1,0 +1,16 @@
+{
+  "name": "d3-experiments",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregtyler/d3-experiments.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gregtyler/d3-experiments/issues"
+  },
+  "homepage": "https://github.com/gregtyler/d3-experiments#readme"
+}
