@@ -44,7 +44,9 @@ links.forEach(({source, target}) => {
 });
 
 // Set a random cell to be tall
-setHeight(cells[Math.floor(Math.random() * cells.length)], 4);
+for (let i = 0; i < 20; i++) {
+  setHeight(cells[Math.floor(Math.random() * cells.length)], 1);
+}
 
 ////// DRAWING //////
 // Draw points
@@ -59,10 +61,13 @@ layer.points.selectAll('.points')
     .attr('fill', 'red');
 
 // Draw polygons
+const colourRange = d3.interpolateRgbBasis([d3.color('#7da8c4'), d3.color('#faf6b7'), d3.color('#ab3d0a')]);
+
 layer.polygons = chart.append('svg:g');
 layer.polygons.selectAll('polygons')
   .data(cells)
   .enter()
     .append('svg:path')
     .attr('d', d => d3.line()(d.points))
-    .attr('class', d => `height height-${d.height}`);
+    .classed('cell', true)
+    .style('color', d => colourRange(d.height));

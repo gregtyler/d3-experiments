@@ -3,10 +3,10 @@ export default function setHeight(cell, height) {
   cell.height = height;
 
   // Set neighbours' heights
-  if (height > 1) {
+  if (height > 0.01) {
     cell.links.forEach(neighbour => {
-      if (neighbour.height < height - 1) {
-        setHeight(neighbour, height - 1);
+      if (neighbour.height < height * 0.9) {
+        setHeight(neighbour, height * 0.9);
       }
     });
   }
