@@ -2,12 +2,18 @@ const gulp = require('gulp');
 const rename = require('gulp-rename');
 const rollup = require('gulp-rollup');
 
+// Error handling
+function handleError(err) {
+  console.error(err.message);
+  this.emit('end');
+}
+
 gulp.task('bundle', function() {
   gulp.src('./src/**/*.js')
     .pipe(rollup({
       entry: './src/chart.js',
       format: 'es'
-    }))
+    }).on('error', handleError))
     .pipe(rename('bundle.js'))
     .pipe(gulp.dest('./'));
 });

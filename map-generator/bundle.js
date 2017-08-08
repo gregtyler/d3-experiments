@@ -24,6 +24,20 @@ function relax(points) {
   return newPoints;
 }
 
+function setHeight(cell, height) {
+  // Set height
+  cell.height = height;
+
+  // Set neighbours' heights
+  if (height > 1) {
+    cell.links.forEach(neighbour => {
+      if (neighbour.height < height - 1) {
+        setHeight(neighbour, height - 1);
+      }
+    });
+  }
+}
+
 const layer = {};
 
 // Create a chart
@@ -33,20 +47,22 @@ const chart = d3.select('#root')
   .attr('height', config.chartHeight);
 
 // Generate random points
-let points = seed(300);
+let points = seed(1000);
 
 // Relax the points a bit (with centroids)
 points = relax(points);
 
-// Generate the polygons
+// Generate the data for the polygons
 const voronoi = d3.voronoi();
 voronoi.size([config.chartWidth, config.chartHeight]);
-const polygons = voronoi.polygons(points);
-const links = voronoi.links(points);
+const diagram = voronoi(points);
+const polygons = diagram.polygons();
+const links = diagram.links();
 
-const data = [];
+const cells = [];
+
 polygons.forEach((polygon, index) => {
-  data.push({
+  cells.push({
     id: index,
     points: polygon,
     centre: polygon.data,
@@ -56,11 +72,14 @@ polygons.forEach((polygon, index) => {
 });
 
 links.forEach(({source, target}) => {
-  source = data.find(d => d.centre === source);
-  target = data.find(d => d.centre === target);
+  source = cells.find(d => d.centre === source);
+  target = cells.find(d => d.centre === target);
   source.links.push(target);
   target.links.push(source);
 });
+
+// Set a random cell to be tall
+setHeight(cells[Math.floor(Math.random() * cells.length)], 4);
 
 ////// DRAWING //////
 // Draw points
@@ -77,7 +96,7 @@ layer.points.selectAll('.points')
 // Draw polygons
 layer.polygons = chart.append('svg:g');
 layer.polygons.selectAll('polygons')
-  .data(data)
+  .data(cells)
   .enter()
     .append('svg:path')
     .attr('d', d => d3.line()(d.points))
