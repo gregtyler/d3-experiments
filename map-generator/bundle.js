@@ -28,13 +28,23 @@ function setHeight(cell, height) {
   // Set height
   cell.height = height;
 
-  // Set neighbours' heights
-  if (height > 0.01) {
-    cell.links.forEach(neighbour => {
-      if (neighbour.height < height * 0.9) {
-        setHeight(neighbour, height * 0.9);
-      }
-    });
+  // Build a list of neighbouring cells
+  const queue = cell.links.map(cell => [cell, height]);
+
+  // Set the height of each cell in the list and, if it's still above sea-level,
+  // then iterate down to neighbours. Using push/shift makes the order work.
+  while (queue.length) {
+    const [cell, parentHeight] = queue.shift();
+    const subHeight = parentHeight - 0.2;// * (0.8 + (Math.random() * 0.4));
+    cell.height = subHeight;
+
+    if (subHeight > 0.1) {
+      cell.links
+        .filter(neighbour => neighbour.height === 0)
+        .forEach(neighbour => {
+          queue.push([neighbour, subHeight]);
+        });
+    }
   }
 }
 
@@ -79,24 +89,13 @@ links.forEach(({source, target}) => {
 });
 
 // Set a random cell to be tall
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 1; i++) {
   setHeight(cells[Math.floor(Math.random() * cells.length)], 1);
 }
 
 ////// DRAWING //////
-// Draw points
-layer.points = chart.append('svg:g');
-layer.points.selectAll('.points')
-  .data(points)
-  .enter()
-    .append('svg:circle')
-    .attr('cx', d => d[0])
-    .attr('cy', d => d[1])
-    .attr('r', 4)
-    .attr('fill', 'red');
-
 // Draw polygons
-const colourRange = d3.interpolateRgbBasis([d3.color('#7da8c4'), d3.color('#faf6b7'), d3.color('#ab3d0a')]);
+const colourRange = d3.interpolateRgb(d3.color('#faf6b7'), d3.color('#ab3d0a'));
 
 layer.polygons = chart.append('svg:g');
 layer.polygons.selectAll('polygons')
@@ -105,4 +104,4 @@ layer.polygons.selectAll('polygons')
     .append('svg:path')
     .attr('d', d => d3.line()(d.points))
     .classed('cell', true)
-    .style('color', d => colourRange(d.height));
+    .style('color', d => d.height === 0 ? d3.color('#7da8c4') : colourRange(d.height));
